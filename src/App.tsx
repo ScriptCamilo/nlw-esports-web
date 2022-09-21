@@ -3,10 +3,11 @@ import * as Dialog from '@radix-ui/react-dialog';
 import axios from 'axios';
 
 import './styles/main.css';
+import { useKeenSlider } from 'keen-slider/react';
 
 import logoImg from './assets/logo.svg'
 
-import { GameCard, CreateAdBanner, Input, CreateAdModal } from './components';
+import { GameCard, CreateAdBanner, CreateAdModal } from './components';
 
 interface Game {
   id: string;
@@ -19,11 +20,21 @@ interface Game {
 
 function App() {
   const [games, setGames] = useState<Game[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [sliderRef] = useKeenSlider(
+    {
+      slides: {
+        perView: 6,
+        spacing: 15,
+      },
+    },
+  )
 
   useEffect(() => {
     const getGames = async () => {
       const response = await axios('http://localhost:3333/games');
       setGames(response.data);
+      setIsLoading(false);
     }
 
     getGames();
@@ -36,11 +47,13 @@ function App() {
         Seu <span className="text-transparent bg-nlw-gradient bg-clip-text">duo</span> está aqui.
       </h1>
 
-      <div className="grid grid-cols-6 gap-6 mt-16">
-        {games.map(game => (
-          <GameCard key={game.id} title={game.title} bannerUrl={game.bannerUrl} adsCount={game._count.ads} />
-        ))}
-      </div>
+      {isLoading ? <></> : (
+        <div ref={sliderRef} className="mt-6 keen-slider">
+          {games.map(game => (
+            <GameCard key={game.id} title={game.title} bannerUrl={game.bannerUrl} adsCount={game._count.ads} />
+          ))}
+        </div>
+      )}
 
       <Dialog.Root>
         <CreateAdBanner />
